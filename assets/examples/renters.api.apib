@@ -1,0 +1,28 @@
+HOST: https://localhost/
+
+# Апи для админ панели Ельцовка-1
+
+## Арендаторы [/renters]
+            
+### Получить всех [GET /renters]
+
++ Response 200 (application/json)
+    + Attributes (array[ShortRenterSummary])
+
+    
+### Получить данные арендатора [GET /renters/{id}]
+
++ Parameters
+    + id: `734d7804-104b-48f3-8c7e-dded513e301a` (string) - Идентификатор арендатора
+
++ Response 200 (application/json)
+    + Attributes (RenterSummary)
+    
+    
+### Создать арендатора [POST /renters]
+
++ Request (application/json)
+    + Attributes (NewRenterParameters)
+
++ Response 200 (application/json)
+    + Attributes (RenterSummary)

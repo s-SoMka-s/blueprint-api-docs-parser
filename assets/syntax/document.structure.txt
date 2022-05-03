@@ -1,0 +1,5 @@
+Metadata section
+
+Api name & overview section 
+
+Resource section
