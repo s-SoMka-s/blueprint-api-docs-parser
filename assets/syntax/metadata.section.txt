@@ -1,0 +1,5 @@
+# host expression
+HOST COLON SPACE URL LINE_BREAK
+
+# Format expression
+FORMAT COLON SPACE STRING LINE_BREAK
