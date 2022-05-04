@@ -1,5 +1,7 @@
-import ExpressionNode from "./ast/ExpressionNode";
+import { SectionNode, SectionType } from "./ast/SectionNode";
 import StatementNode from "./ast/StatementNode";
+import { StringNode } from "./ast/StringNode";
+import { WordNode } from "./ast/WordNode";
 import Token from "./models/tokens/Token";
 import TokenType, { tokenTypesList } from "./models/tokens/TokenType";
 
@@ -8,23 +10,52 @@ export default class Parser {
     pos: number = 0;
     scope: any = {};
 
-    public constructor(tokens: Token[]){
+    constructor(tokens: Token[]) {
         this.tokens = tokens;
     }
 
-    parse = (): ExpressionNode => {
-        const root = new StatementNode();
+    parse = (): StatementNode => {
+        const root = new StatementNode(null);
         while (this.pos < this.tokens.length) {
-            const codeStringNode = this.parseExpression();
+            const sectionNode = this.parseSection();
+
             this.require(tokenTypesList.LINE_BREAK);
-            root.addNode(codeStringNode);
+            this.require(tokenTypesList.LINE_BREAK);
+
+            root.addChild(sectionNode);
         }
+        return root;
+    }
+
+    private parseSection = (): SectionNode => {
+        const type = this.getSectionType();
+        const root = new SectionNode(type);
 
         return root;
     }
 
-    private parseExpression = (): ExpressionNode => {
-        return new ExpressionNode();
+    private getSectionType = (): SectionType => {
+        return SectionType.META_DATA;
+    }
+
+    private parseString = (pos: number): StringNode => {
+        const root = new StringNode();
+        do {
+            const token = this.tokens[pos]
+            switch (token.type) {
+                case tokenTypesList.WORD:
+                    const word = this.parseWord(token);
+                    root.addWord(word);
+                    pos += 1;
+                    break;
+                case tokenTypesList.LINE_BREAK:
+                    return root;
+            }
+        } while(true);
+    }
+
+    private parseWord = (token: Token): WordNode => {
+        return new WordNode(token);
     }
 
     private match = (...expected: TokenType[]):Token | null => {

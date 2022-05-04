@@ -14,7 +14,7 @@ export default class Lexer {
         const tokens: Token[] = []
         while (this.hasNextToken()) {
             const token = this.getNextToken();
-            if (token) {
+            if (token && token.type !== tokenTypesList.SPACE) {
                 tokens.push(token);
             }
         }
