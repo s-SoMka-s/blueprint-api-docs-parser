@@ -1,5 +1,3 @@
-import Token from './Token';
-
 export default class TokenType {
     name: string;
     regex: string;
@@ -38,7 +36,7 @@ export const tokenTypesList = {
     // urls
     URL: new TokenType('URL', 'https://[0-9.a-zA-Z:]*/'),
 
-    WORD: new TokenType('WORD', '[0-9A-Za-z]*'),
+    // WORD: new TokenType('WORD', '[0-9A-Za-z]*'),
 
     // return types
     APP_JSON: new TokenType('APP_JSON', 'application/json'),
@@ -56,5 +54,6 @@ export const tokenTypesList = {
 
     PLUS: new TokenType('PLUS', '\\+'),
     LINE_BREAK: new TokenType('LINE_BREAK', '\\r\\n'),
-    NUMBER: new TokenType('NUMBER', '[0-9]*'),
+
+    IDENTIFIER: new TokenType('IDENTIFIER', '[^\\[\\]\\(\\)\\r\\n]*'),
 };

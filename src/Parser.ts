@@ -1,12 +1,20 @@
-import { rootCertificates } from "tls";
-import { ApiOverviewNode } from "./ast/ApiOverviewNode";
-import { ApiTitleNode } from "./ast/ApiTitleNode";
-import { SectionNode, SectionType } from "./ast/SectionNode";
-import StatementNode from "./ast/StatementNode";
-import { StringNode } from "./ast/StringNode";
-import { WordNode } from "./ast/WordNode";
-import Token from "./models/tokens/Token";
-import TokenType, { tokenTypesList } from "./models/tokens/TokenType";
+import { rootCertificates } from 'tls';
+import NamedSectionNode from './ast/abstract/named.section.node';
+import { ApiOverviewNode } from './ast/ApiOverviewNode';
+import { ApiTitleNode } from './ast/ApiTitleNode';
+import { SectionNode, SectionType } from './ast/SectionNode';
+import ApiNameOverviewSectionNode from './ast/sections/api-name-overview/api-name-overview.section.node';
+import FormatNode from './ast/sections/metadata/format.node';
+import HostNode from './ast/sections/metadata/host.node';
+import { MetadataSectionNode } from './ast/sections/metadata/metadata.section.node';
+import StatementNode from './ast/StatementNode';
+import { StringNode } from './ast/StringNode';
+import { IdentifierNode } from './ast/types/identifier.node';
+import HeaderKeywordNode from './ast/types/keywords/header-keyword.node';
+import KeywordNode from './ast/types/keywords/header-keyword.node';
+import { WordNode } from './ast/WordNode';
+import Token from './models/tokens/Token';
+import TokenType, { tokenTypesList } from './models/tokens/TokenType';
 
 export default class Parser {
     tokens: Token[];
@@ -19,108 +27,94 @@ export default class Parser {
 
     parse = (): StatementNode => {
         const root = new StatementNode(null);
-        while (this.pos < this.tokens.length) {
-            const sectionNode = this.parseSection();
+        //while (this.pos < this.tokens.length) {
+        const metadata = this.parseMetaDataSection();
+        root.addChild(metadata);
 
-            this.require(tokenTypesList.LINE_BREAK);
-            //this.require(tokenTypesList.LINE_BREAK);
+        this.require(tokenTypesList.LINE_BREAK);
 
-            root.addChild(sectionNode);
-        }
+        const apiNameOverview = this.parseApiNameOverviewSection();
+        root.addChild(apiNameOverview);
+        //}
         return root;
+    };
+
+    // Group
+    // Data Structures
+    // Get, Post, Put, Delete
+    // /resource/{id}
+    private parseHeaderKeyword(): HeaderKeywordNode {
+        const keyword = this.match(
+            tokenTypesList.GROUP,
+            tokenTypesList.DATA_STRUCTURES,
+            tokenTypesList.HTTP_METHOD,
+            tokenTypesList.URI_TEMPLATE
+        );
+
+        return new HeaderKeywordNode(keyword);
     }
 
-    private parseSection = (): SectionNode => {
-        const type = this.getSectionType();
+    private parseIdentifier(): IdentifierNode {
+        const identifier = this.match(tokenTypesList.IDENTIFIER);
 
-        switch(type) {
-            case SectionType.META_DATA:
-                return this.parseMetaDataSection();
-            case SectionType.OVERVIEW:
-                return this.parseOverviewSection();
-        }
-
-        throw new Error("");
+        return new IdentifierNode(identifier);
     }
 
-    private parseMetaDataSection = (): SectionNode => {
-        const root = new SectionNode(SectionType.META_DATA);
+    // FORMAT: 1A
+    // HOST: http://example.com
+    private parseMetaDataSection = (): MetadataSectionNode => {
+        const format = this.parseFormatNode();
+        const host = this.parseHostNode();
 
+        return new MetadataSectionNode(format, host);
+    };
 
-
-        return root;
-    } 
-
-    private parseOverviewSection = (): SectionNode => {
-        const root = new SectionNode(SectionType.OVERVIEW);
-
-        const title = this.parseApiTitle();
-        root.addChild(title);
-
-        const description = this.parseApiOverview();
-        root.addChild(description);
-        
-        return root;
+    // FORMAT: 1A
+    private parseFormatNode(): FormatNode {
+        this.require(tokenTypesList.FORMAT);
+        this.require(tokenTypesList.COLON);
+        const format = this.match(tokenTypesList.IDENTIFIER);
+        this.require(tokenTypesList.LINE_BREAK);
+        return new FormatNode(format);
     }
 
-    private parseApiTitle = ():ApiTitleNode => {
+    // HOST: http://example.com
+    private parseHostNode(): HostNode {
+        this.require(tokenTypesList.HOST);
+        this.require(tokenTypesList.COLON);
+        const host = this.match(tokenTypesList.URL);
+        this.require(tokenTypesList.LINE_BREAK);
+        return new HostNode(host);
+    }
+
+    private parseApiNameOverviewSection = (): ApiNameOverviewSectionNode => {
         this.require(tokenTypesList.FIRST_MARKDOWN_HEADER);
-        const stringNode = this.parseString();
 
-        return new ApiTitleNode(stringNode);
-    }
+        const identifier = this.parseIdentifier();
+        const description = '';
 
-    private parseApiOverview = (): ApiOverviewNode => {
-        const stringNode = this.parseString();
+        return new ApiNameOverviewSectionNode(null, identifier);
+    };
 
-        return new ApiTitleNode(stringNode);
-    }
-
-    private getSectionType = (): SectionType => {
-        return SectionType.OVERVIEW;
-    }
-
-    private parseString = (): StringNode => {
-        const root = new StringNode();
-        do {
-            const token = this.tokens[this.pos]
-            
-            switch (token.type) {
-                case tokenTypesList.WORD:
-                    const word = this.parseWord(token);
-                    root.addWord(word);
-                    this.pos += 1;
-                    break;
-                case tokenTypesList.LINE_BREAK:
-                    this.pos += 1;
-                    return root;
-            }
-        } while(true);
-    }
-
-    private parseWord = (token: Token): WordNode => {
-        return new WordNode(token);
-    }
-
-    private match = (...expected: TokenType[]):Token | null => {
+    private match = (...expected: TokenType[]): Token => {
         if (this.pos < this.tokens.length) {
             const current = this.tokens[this.pos];
 
-            if (expected.find(type => type.name === current.type.name)) {
+            if (expected.find((type) => type.name === current.type.name)) {
                 this.pos += 1;
                 return current;
             }
         }
 
-        return null;
-    }
+        throw new Error(`Doesn't match any ${expected.values}`);
+    };
 
     private require = (...expected: TokenType[]): Token => {
         const token = this.match(...expected);
         if (!token) {
-            throw new Error("");
+            throw new Error('');
         }
 
         return token;
-    }
+    };
 }
