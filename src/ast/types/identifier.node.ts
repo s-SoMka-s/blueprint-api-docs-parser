@@ -1,9 +1,8 @@
 import Token from '../../models/tokens/Token';
+import ExpressionNode from '../ExpressionNode';
 
-export class IdentifierNode {
-    token: Token;
-
-    constructor(token: Token) {
-        this.token = token;
+export class IdentifierNode extends ExpressionNode {
+    constructor(token: Token | null) {
+        super(token);
     }
 }
