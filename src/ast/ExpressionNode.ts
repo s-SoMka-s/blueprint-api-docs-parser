@@ -6,5 +6,4 @@ export default class ExpressionNode {
     constructor(token: Token | null) {
         this.token = token;
     }
-    
 }

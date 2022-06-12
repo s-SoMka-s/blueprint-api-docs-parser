@@ -1,3 +1,6 @@
+import { rootCertificates } from "tls";
+import { ApiOverviewNode } from "./ast/ApiOverviewNode";
+import { ApiTitleNode } from "./ast/ApiTitleNode";
 import { SectionNode, SectionType } from "./ast/SectionNode";
 import StatementNode from "./ast/StatementNode";
 import { StringNode } from "./ast/StringNode";
@@ -20,7 +23,7 @@ export default class Parser {
             const sectionNode = this.parseSection();
 
             this.require(tokenTypesList.LINE_BREAK);
-            this.require(tokenTypesList.LINE_BREAK);
+            //this.require(tokenTypesList.LINE_BREAK);
 
             root.addChild(sectionNode);
         }
@@ -29,26 +32,67 @@ export default class Parser {
 
     private parseSection = (): SectionNode => {
         const type = this.getSectionType();
-        const root = new SectionNode(type);
 
+        switch(type) {
+            case SectionType.META_DATA:
+                return this.parseMetaDataSection();
+            case SectionType.OVERVIEW:
+                return this.parseOverviewSection();
+        }
+
+        throw new Error("");
+    }
+
+    private parseMetaDataSection = (): SectionNode => {
+        const root = new SectionNode(SectionType.META_DATA);
+
+
+
+        return root;
+    } 
+
+    private parseOverviewSection = (): SectionNode => {
+        const root = new SectionNode(SectionType.OVERVIEW);
+
+        const title = this.parseApiTitle();
+        root.addChild(title);
+
+        const description = this.parseApiOverview();
+        root.addChild(description);
+        
         return root;
     }
 
-    private getSectionType = (): SectionType => {
-        return SectionType.META_DATA;
+    private parseApiTitle = ():ApiTitleNode => {
+        this.require(tokenTypesList.FIRST_MARKDOWN_HEADER);
+        const stringNode = this.parseString();
+
+        return new ApiTitleNode(stringNode);
     }
 
-    private parseString = (pos: number): StringNode => {
+    private parseApiOverview = (): ApiOverviewNode => {
+        const stringNode = this.parseString();
+
+        return new ApiTitleNode(stringNode);
+    }
+
+    private getSectionType = (): SectionType => {
+        return SectionType.OVERVIEW;
+    }
+
+    private parseString = (): StringNode => {
         const root = new StringNode();
         do {
-            const token = this.tokens[pos]
+            const token = this.tokens[this.pos]
+            
             switch (token.type) {
                 case tokenTypesList.WORD:
                     const word = this.parseWord(token);
                     root.addWord(word);
-                    pos += 1;
+                    this.pos += 1;
                     break;
                 case tokenTypesList.LINE_BREAK:
+                    this.pos += 1;
                     return root;
             }
         } while(true);

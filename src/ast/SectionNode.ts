@@ -18,5 +18,5 @@ export class SectionNode extends ExpressionNode {
 
     addChild = (child: ExpressionNode) => {
         this.children.push(child);
-    }
+    }    
 }
