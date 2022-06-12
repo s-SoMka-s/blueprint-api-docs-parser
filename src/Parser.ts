@@ -1,18 +1,13 @@
-import { rootCertificates } from 'tls';
-import NamedSectionNode from './ast/abstract/named.section.node';
-import { ApiOverviewNode } from './ast/ApiOverviewNode';
-import { ApiTitleNode } from './ast/ApiTitleNode';
-import { SectionNode, SectionType } from './ast/SectionNode';
+import ActionSectionNode from './ast/sections/action/action.section.node';
 import ApiNameOverviewSectionNode from './ast/sections/api-name-overview/api-name-overview.section.node';
 import FormatNode from './ast/sections/metadata/format.node';
 import HostNode from './ast/sections/metadata/host.node';
 import { MetadataSectionNode } from './ast/sections/metadata/metadata.section.node';
+import { ResourceGroupSection } from './ast/sections/resource-group/resource-group.section.node';
+import { ResourceSection } from './ast/sections/resource/resource.section.node';
 import StatementNode from './ast/StatementNode';
-import { StringNode } from './ast/StringNode';
 import { IdentifierNode } from './ast/types/identifier.node';
 import HeaderKeywordNode from './ast/types/keywords/header-keyword.node';
-import KeywordNode from './ast/types/keywords/header-keyword.node';
-import { WordNode } from './ast/WordNode';
 import Token from './models/tokens/Token';
 import TokenType, { tokenTypesList } from './models/tokens/TokenType';
 
@@ -35,6 +30,11 @@ export default class Parser {
 
         const apiNameOverview = this.parseApiNameOverviewSection();
         root.addChild(apiNameOverview);
+
+        this.require(tokenTypesList.LINE_BREAK);
+
+        const resource = this.parseResourceSection();
+        root.addChild(resource);
         //}
         return root;
     };
@@ -43,13 +43,8 @@ export default class Parser {
     // Data Structures
     // Get, Post, Put, Delete
     // /resource/{id}
-    private parseHeaderKeyword(): HeaderKeywordNode {
-        const keyword = this.match(
-            tokenTypesList.GROUP,
-            tokenTypesList.DATA_STRUCTURES,
-            tokenTypesList.HTTP_METHOD,
-            tokenTypesList.URI_TEMPLATE
-        );
+    private parseHeaderKeyword(expected: TokenType): HeaderKeywordNode {
+        const keyword = this.match(expected);
 
         return new HeaderKeywordNode(keyword);
     }
@@ -91,10 +86,74 @@ export default class Parser {
         this.require(tokenTypesList.FIRST_MARKDOWN_HEADER);
 
         const identifier = this.parseIdentifier();
+        this.require(tokenTypesList.LINE_BREAK);
+
         const description = '';
 
         return new ApiNameOverviewSectionNode(null, identifier);
     };
+
+    private parseResourceGroupSection(): ResourceGroupSection {
+        this.require(tokenTypesList.FIRST_MARKDOWN_HEADER);
+        this.require(tokenTypesList.GROUP);
+
+        const identifier = this.parseIdentifier();
+
+        this.require(tokenTypesList.LINE_BREAK);
+
+        return new ResourceGroupSection(null, identifier);
+    }
+
+    private parseResourceSection(): ResourceSection {
+        this.require(tokenTypesList.FIRST_MARKDOWN_HEADER);
+
+        const identifier = this.parseIdentifier();
+
+        this.require(tokenTypesList.OPENING_SQUARE_BRACKET);
+
+        // const method = this.parseHeaderKeyword(tokenTypesList.HTTP_METHOD);
+        const uri = this.parseHeaderKeyword(tokenTypesList.URI_TEMPLATE);
+
+        this.require(tokenTypesList.CLOSING_SQUARE_BRACKET);
+
+        this.require(tokenTypesList.LINE_BREAK);
+
+        const description = '';
+
+        this.require(tokenTypesList.LINE_BREAK);
+        const action1 = this.parseActionSection();
+
+        this.require(tokenTypesList.LINE_BREAK);
+        const action2 = this.parseActionSection();
+
+        this.require(tokenTypesList.LINE_BREAK);
+        const action3 = this.parseActionSection();
+
+        this.require(tokenTypesList.LINE_BREAK);
+        const action4 = this.parseActionSection();
+
+        return new ResourceSection(identifier, null, uri, [
+            action1,
+            action2,
+            action3,
+            action4,
+        ]);
+    }
+
+    private parseActionSection(): ActionSectionNode {
+        this.require(tokenTypesList.SECOND_MARKDOWN_HEADER);
+        const identifier = this.parseIdentifier();
+
+        this.require(tokenTypesList.OPENING_SQUARE_BRACKET);
+
+        const method = this.parseHeaderKeyword(tokenTypesList.HTTP_METHOD);
+        const uri = this.parseHeaderKeyword(tokenTypesList.URI_TEMPLATE);
+
+        this.require(tokenTypesList.CLOSING_SQUARE_BRACKET);
+        this.require(tokenTypesList.LINE_BREAK);
+
+        return new ActionSectionNode(identifier, method, uri);
+    }
 
     private match = (...expected: TokenType[]): Token => {
         if (this.pos < this.tokens.length) {
