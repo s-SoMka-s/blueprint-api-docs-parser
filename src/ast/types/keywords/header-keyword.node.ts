@@ -6,9 +6,9 @@ export default class HeaderKeywordNode
     extends ExpressionNode
     implements IKeywordNode
 {
-    token: Token;
+    token: Token | null;
 
-    constructor(token: Token) {
+    constructor(token: Token | null) {
         super(null);
         this.token = token;
     }
