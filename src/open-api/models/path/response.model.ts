@@ -1,5 +1,5 @@
-import { IHeader } from "../../header.model";
-import { IReference } from "../../reference.model";
+import { IHeader } from "../header.model";
+import { IReference } from "../reference.model";
 
 export interface IResponse {
     description: string;
