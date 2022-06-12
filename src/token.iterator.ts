@@ -13,7 +13,11 @@ export class TokenIterator implements Iterator<Token> {
         return this.tokens[this.position];
     }
 
+<<<<<<< HEAD
     next(): Token | null {
+=======
+    next(): Token {
+>>>>>>> 1023ec896b296a834fb887484e84802780b5372d
         if (!this.hasNext()) {
             return null;
         }
