@@ -1,5 +1,6 @@
 import { Iterator } from './iterator';
 import Token from './models/tokens/Token';
+import TokenType from './models/tokens/TokenType';
 
 export class TokenIterator implements Iterator<Token> {
     private tokens: Token[];
@@ -13,11 +14,7 @@ export class TokenIterator implements Iterator<Token> {
         return this.tokens[this.position];
     }
 
-<<<<<<< HEAD
     next(): Token | null {
-=======
-    next(): Token {
->>>>>>> 1023ec896b296a834fb887484e84802780b5372d
         if (!this.hasNext()) {
             return null;
         }
@@ -28,5 +25,32 @@ export class TokenIterator implements Iterator<Token> {
 
     hasNext(): boolean {
         return true;
+    }
+
+    match(...expected: TokenType[]): Token | null {
+        if (!this.hasNext()) {
+            return null;
+        }
+
+        const current = this.current();
+        if (expected.find((type) => type.name === current.type.name)) {
+            this.next();
+            return current;
+        }
+
+        return null;
+    }
+
+    require(...expected: TokenType[]): Token {
+        const token = this.match(...expected);
+        if (!token) {
+            throw new Error(
+                `Doesn't match any. Expected ${expected
+                    .map((e) => e.name)
+                    .toString()}`
+            );
+        }
+
+        return token;
     }
 }
