@@ -36,6 +36,11 @@ export const tokenTypesList = {
     // urls
     URL: new TokenType('URL', 'https://[0-9.a-zA-Z:]*/'),
 
+    // mson types
+    STRING: new TokenType('STRING', 'string'),
+    NUMBER: new TokenType('NUMBER', 'number'),
+    BOOLEAN: new TokenType('BOOLEAN', 'boolean'),
+
     // WORD: new TokenType('WORD', '[0-9A-Za-z]*'),
 
     // return types

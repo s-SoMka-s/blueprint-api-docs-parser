@@ -3,10 +3,16 @@ import { IdentifierNode } from '../ast/types/identifier.node';
 import HeaderKeywordNode from '../ast/types/keywords/header-keyword.node';
 import TokenType, { tokenTypesList } from '../models/tokens/TokenType';
 import { TokenIterator } from '../token.iterator';
+import BaseParser from './base/base.parser';
 import IParser from './interfaces/parser.interface';
 
-export default class SectionParser implements IParser<SectionNode> {
-    constructor(public _iterator: TokenIterator) {}
+export default class SectionParser
+    extends BaseParser
+    implements IParser<SectionNode>
+{
+    constructor(_iterator: TokenIterator) {
+        super(_iterator);
+    }
 
     parse(): SectionNode {
         throw new Error('Method not implemented.');
@@ -20,11 +26,5 @@ export default class SectionParser implements IParser<SectionNode> {
         const keyword = this._iterator.match(expected);
 
         return new HeaderKeywordNode(keyword);
-    }
-
-    protected parseIdentifier(): IdentifierNode {
-        const identifier = this._iterator.require(tokenTypesList.IDENTIFIER);
-
-        return new IdentifierNode(identifier);
     }
 }
