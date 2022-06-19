@@ -10,4 +10,16 @@ export default class ApiNameOverviewSectionNode extends SectionNode {
     ) {
         super(keyword, identifier);
     }
+
+    public getTitle(): string {
+        if (!this.identifier.token) {
+            return '';
+        }
+
+        return this.identifier.token.text;
+    }
+
+    public getDescription(): string {
+        return '';
+    }
 }

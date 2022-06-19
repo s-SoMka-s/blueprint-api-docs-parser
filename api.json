@@ -1,1 +1,1 @@
-{"openapi":"3.0.0","info":null,"servers":[],"paths":{},"security":[],"tags":[]}
+{"openapi":"3.0.0","info":{"title":"Basic ACME Blog API","description":"","termsOfService":"","contact":null,"license":null,"version":""},"servers":[],"paths":{},"security":[],"tags":[]}

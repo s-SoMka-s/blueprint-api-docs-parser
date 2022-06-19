@@ -1,4 +1,7 @@
+import { notDeepEqual } from 'assert';
 import ExpressionNode from '../ast/ExpressionNode';
+import ApiNameOverviewSectionNode from '../ast/sections/api-name-overview/api-name-overview.section.node';
+import { MetadataSectionNode } from '../ast/sections/metadata/metadata.section.node';
 import { IInfo } from './models/info/info.model';
 import { IOpenApi } from './models/open-api.model';
 import { IPathItem } from './models/path/path-item.model';
@@ -32,6 +35,31 @@ export default class OpenApiBuilder {
     build(): IOpenApi | null {
         if (!this._rootAstNode) {
             return null;
+        }
+
+        const node = this._rootAstNode;
+
+        if (node instanceof ApiNameOverviewSectionNode) {
+            const info: IInfo = {
+                title: node.getTitle(),
+                description: node.getDescription(),
+                termsOfService: '',
+                contact: null,
+                license: null,
+                version: '',
+            };
+
+            this.setInfoSection(info);
+        }
+
+        if (node instanceof MetadataSectionNode) {
+            const server: IServer = {
+                url: node.getHost(),
+                description: '',
+                variables: new Map(),
+            };
+
+            this.addServerObject(server);
         }
 
         return this._document;
