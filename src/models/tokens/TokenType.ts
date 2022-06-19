@@ -1,3 +1,5 @@
+import Token from './Token';
+
 export default class TokenType {
     name: string;
     regex: string;
@@ -50,6 +52,9 @@ export const tokenTypesList = {
     COLON: new TokenType('COLON', ':'),
     SPACE: new TokenType('SPACE', ' '),
     SEMICOLON: new TokenType('SEMICOLON', ';'),
+    COMMA: new TokenType('COMMA', ','),
+    DASH: new TokenType('DASH', '-'),
+    STAR: new TokenType('STAR', '\\*'),
 
     OPENING_PARENTHESIS: new TokenType('OPENING_PARENTHESIS', '\\('),
     CLOSING_PARENTHESIS: new TokenType('CLOSING_PARENTHESIS', '\\)'),
