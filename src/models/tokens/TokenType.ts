@@ -62,6 +62,8 @@ export const tokenTypesList = {
     OPENING_SQUARE_BRACKET: new TokenType('OPENING_SQUARE_BRACKET', '\\['),
     CLOSING_SQUARE_BRACKET: new TokenType('CLOSING_SQUARE_BRACKET', '\\]'),
 
+    SIGLE_LINE_COMMENT: new TokenType('COMMENT', '\\/\\/ [^\\r\\n]*'),
+
     PLUS: new TokenType('PLUS', '\\+'),
     LINE_BREAK: new TokenType('LINE_BREAK', '\\r\\n'),
 

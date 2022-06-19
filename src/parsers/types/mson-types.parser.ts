@@ -6,6 +6,7 @@ import { PropertyMemberDeclarationNode } from '../../ast/mson/type-declaration/p
 import { TypeDeclarationNode } from '../../ast/mson/type-declaration/type-declaration.node';
 import { TypeDefinitionNode } from '../../ast/mson/type-definition.node';
 import { TypeNameNode } from '../../ast/mson/type-name.node';
+import { TypeSpecificationNode } from '../../ast/mson/type-specification.node';
 import { ValueNode } from '../../ast/mson/value.node';
 import { ValuesListNode } from '../../ast/mson/values-list.node';
 import { VariableTypeNameNode } from '../../ast/mson/variable-type-name.node';
@@ -88,7 +89,36 @@ export default class MsonTypesParser extends BaseParser {
     }
 
     private parseTypeDefinition(): TypeDefinitionNode {
-        return new TypeDefinitionNode();
+        this._iterator.require(tokenTypesList.OPENING_PARENTHESIS);
+        const spec = this.parseTypeSpecification();
+        if (!this._iterator.match(tokenTypesList.COMMA)) {
+            this._iterator.require(tokenTypesList.CLOSING_PARENTHESIS);
+
+            return new TypeDefinitionNode(spec, null);
+        }
+
+        this._iterator.require(tokenTypesList.COMMA);
+        const list = this.parseTypeAttributesList();
+        this._iterator.require(tokenTypesList.CLOSING_PARENTHESIS);
+
+        return new TypeDefinitionNode(spec, list);
+    }
+
+    private parseTypeSpecification(): TypeSpecificationNode {
+        const typeName = this.parseTypeName();
+        if (!this._iterator.match(tokenTypesList.OPENING_SQUARE_BRACKET)) {
+            return new TypeSpecificationNode(typeName, null);
+        }
+
+        this._iterator.require(tokenTypesList.OPENING_SQUARE_BRACKET);
+        const list = null;
+        this._iterator.require(tokenTypesList.CLOSING_SQUARE_BRACKET);
+
+        return new TypeSpecificationNode(typeName, list);
+    }
+
+    private parseTypeAttributesList(): null {
+        return null;
     }
 
     private parseVariableTypeSpecification(): void {}
@@ -135,6 +165,10 @@ export default class MsonTypesParser extends BaseParser {
     }
 
     private parseLiteral(): LiteralNode | null {
+        const token = this._iterator.match(tokenTypesList.IDENTIFIER);
+        if (token) {
+            return new LiteralNode(token);
+        }
         return null;
     }
 
@@ -151,7 +185,7 @@ export default class MsonTypesParser extends BaseParser {
     private parseValue(): ValueNode {
         const literal = this.parseLiteral();
         if (literal) {
-            return new LiteralNode(); // ValueNode
+            return literal; // ValueNode
         }
 
         const variable = this.parseVariableValue();
